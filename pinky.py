@@ -10,6 +10,9 @@ if __name__ == '__main__':
 
     with open(filename) as file:
         source = file.read()
+        print("LEXER: ")
         tokens = Lexer(source).tokenize()
         for token in tokens:
             print(token)
+
+    
