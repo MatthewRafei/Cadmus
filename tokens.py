@@ -54,6 +54,29 @@ TOK_PRINTLN    = 'TOK_PRINTLN'
 TOK_RET        = 'TOK_RET'
 
 ###############################################################################
+# Keyword dictionary
+###############################################################################
+
+keywords = {
+    'if'       : TOK_IF,
+    'then'     : TOK_THEN,
+    'else'     : TOK_ELSE,
+    'TRUE'     : TOK_TRUE,
+    'FALSE'    : TOK_FALSE,
+    'and'      : TOK_AND,
+    'or'       : TOK_OR,
+    'while'    : TOK_WHILE,
+    'do'       : TOK_DO,
+    'for'      : TOK_FOR,
+    'func'     : TOK_FUNC,
+    'NULL'     : TOK_NULL,
+    'END'      : TOK_END,
+    'print'    : TOK_PRINT,
+    'println'  : TOK_PRINTLN,
+    'RET'      : TOK_RET
+}   
+
+###############################################################################
 # Token class definition
 ###############################################################################
 

@@ -14,21 +14,29 @@ class Lexer:
         return character
 
     def add_token(self, token_type): # Slicing syntax
-        self.tokens.append(Token(token_type, self.source[self.start_character:self.current_character], self.current_line))
+        self.tokens.append(Token(token_type, \
+                                 self.source[self.start_character:self.current_character], \
+                                 self.current_line))
 
     def peek(self):
+        # Overflow safe, has hit when file was too long
+        # due to logic used in tokenizing identifiers.
+        # IDK why maybe there is a bug in identifiers that needs to get fixed
+        if self.current_character >= len(self.source):
+            return '\0'
         return self.source[self.current_character]
 
     # Maybe we can represent N as something else
     def lookahead(self, n=1):
-
         # Overflow safe, hopefully never hit
         if self.current_line >= len(self.source):
             return '\0'
         
         return self.source[self.current_character + n]
 
-    # character is the previous current character and current character is incremented in advanced() function at the start of the tokenize function
+    # character is the previous current character and
+    # current character is incremented in advanced()
+    # function at the start of the tokenize function
     def match(self, expected):
         # check for overflow
         if self.current_character >= len(self.source):
@@ -41,7 +49,46 @@ class Lexer:
         self.current_character = self.current_character + 1 # consume character
         return True
 
-    # Digit is printing 6 times when it should be 3 are there two passes of the source code?
+    def handle_digit(self):
+        while self.peek().isdigit():
+            self.advance()
+        if self.peek() == '.' and self.lookahead().isdigit():
+            self.advance()
+            while self.peek().isdigit():
+                self.advance()
+            self.add_token(TOK_FLOAT)
+        else:
+            self.add_token(TOK_INTEGER)
+
+    def handle_string(self):
+        while self.peek().isalpha() and \
+              not(self.current_character >= len(self.source)):
+            self.advance()
+        if self.current_character >= len(self.source):
+            raise SyntaxError(f'[Line {self.current_line}] Unterminated string.')
+        if self.peek() == '"' or self.peek() == '\'':
+            self.advance()
+            self.add_token(TOK_STRING)
+        else:
+            # Need better error handling
+            raise SyntaxError(f'[Line {self.current_line}] Unterminated string.')
+
+    def handle_identifier(self):
+        while self.peek().isalnum() or self.peek() == '_':
+            self.advance()
+
+        # Check to see if identifier is a keyword in the keywords dict in tokens.py
+        potential_keyword = self.source[self.start_character:self.current_character]
+        keyword_type = keywords.get(potential_keyword)
+        
+        if keyword_type == None:
+            self.add_token(TOK_IDENTIFIER)
+        else:
+            self.add_token(keyword_type)
+        
+               
+    # Digit is printing 6 times when it
+    # should be 3 are there two passes of the source code?
     def tokenize(self):
         while self.current_character < len(self.source):
             self.start_character = self.current_character
@@ -56,9 +103,14 @@ class Lexer:
                 self.current_line = self.current_line + 1
             
             # Skip comments and advance to new line
-            if character == '#':
-                while self.peek() != '\n' and not(self.current_character >= len(self.source)):
-                    self.advance()
+            if character == '-':
+                if self.match('-'):
+                    while self.peek() != '\n' and not(self.current_character >= \
+                                                      len(self.source)):
+                        self.advance()
+                else:
+                    self.add_token(TOK_MINUS)
+                        
             
             if character == '(':
                 self.add_token(TOK_LPAREN)
@@ -78,8 +130,6 @@ class Lexer:
                 self.add_token(TOK_DOT)
             elif character == '+':
                 self.add_token(TOK_PLUS)
-            elif character == '-':
-                self.add_token(TOK_MINUS)
             elif character == '*':
                 self.add_token(TOK_STAR)
             elif character == '/':
@@ -92,9 +142,12 @@ class Lexer:
                 self.add_token(TOK_SEMICOLON)
             elif character == '?':
                 self.add_token(TOK_QUESTION)
+            elif character == '#':
+                pass
 
-            # Greater than or equal, greater than, less than or equal, less than
-            elif character == '>':
+            # Greater than or equal, greater than,
+            # less than or equal, less than
+            if character == '>':
                 if self.match('='):
                     self.add_token(TOK_GE)
                 elif self.match('>'):
@@ -128,14 +181,21 @@ class Lexer:
                 else:
                     self.add_token(TOK_COLON)
 
-            # TODO: Check if it is a digit, then perform the logic of reading either ints or floats
-
+            # Check if it is a digit, then perform the
+            # logic of reading either ints or floats
             if character.isdigit():
-                print("DIGIT")
+                self.handle_digit()
+                        
+            # Check if it is a ' or " and
+            # then perform the logic of reading a string token
+            if character == '"' or character == '\'':
+                self.handle_string()
+    
+            # TODO: Check if it is an alpha character (a letter) or _,.
+            # then we must handle an identifier
+            if character.isalpha() or character == '_':
+                self.handle_identifier()
 
-            # TODO: Check if it is a ' and then perform the logic of reading a string token
-            
-            # TODO: Check if it is an alpha character (a letter) or _, then we must handle an identifier
 
         return self.tokens
 
