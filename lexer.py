@@ -1,4 +1,7 @@
 from tokens import *
+import pdb
+
+# TODO: Fix line counter with mutli-comments
 
 class Lexer:
     def __init__(self, source):
@@ -8,9 +11,9 @@ class Lexer:
         self.current_line = 1
         self.tokens = []
 
-    def advance(self):
+    def advance(self, n = 1):
         character = self.source[self.current_character]
-        self.current_character = self.current_character + 1
+        self.current_character = self.current_character + n
         return character
 
     def add_token(self, token_type): # Slicing syntax
@@ -29,14 +32,17 @@ class Lexer:
     # Maybe we can represent N as something else
     def lookahead(self, n=1):
         # Overflow safe, hopefully never hit
-        if self.current_line >= len(self.source):
+        # changed from current_line to current_character
+        if self.current_character + n >= len(self.source):
             return '\0'
-        
+
         return self.source[self.current_character + n]
 
     # character is the previous current character and
     # current character is incremented in advanced()
     # function at the start of the tokenize function
+
+    # NOTE: Maybe match should not consume character
     def match(self, expected):
         # check for overflow
         if self.current_character >= len(self.source):
@@ -45,8 +51,8 @@ class Lexer:
         # Check to see if current character is expected
         if self.source[self.current_character] != expected:
             return False
-        
-        self.current_character = self.current_character + 1 # consume character
+
+        self.current_character += 1 # consume character
         return True
 
     def handle_digit(self):
@@ -85,7 +91,6 @@ class Lexer:
             self.add_token(TOK_IDENTIFIER)
         else:
             self.add_token(keyword_type)
-        
                
     # Digit is printing 6 times when it
     # should be 3 are there two passes of the source code?
@@ -93,27 +98,38 @@ class Lexer:
         while self.current_character < len(self.source):
             self.start_character = self.current_character
             character = self.advance()
-
             # Skip blank, tabs, carriage return (CR) characters
             if character == (' ' or '\t' or '\r'):
                 pass
-            
             # Increment new line
-            if character == '\n':
+            elif character == '\n':
                 self.current_line = self.current_line + 1
-            
             # Skip comments and advance to new line
-            if character == '-':
+            elif character == '-':
                 if self.match('-'):
                     while self.peek() != '\n' and not(self.current_character >= \
                                                       len(self.source)):
                         self.advance()
                 else:
                     self.add_token(TOK_MINUS)
-                        
-            
-            if character == '(':
-                self.add_token(TOK_LPAREN)
+            ###################################
+
+            elif character == '(':
+                if self.match('*'):
+                    skip = False
+                    while not(self.current_character >= len(self.source)):
+                        if not skip and self.peek() == '*' and self.lookahead() == ')':
+                            break
+                        if self.peek() == '\\':
+                            skip = True
+                        else:
+                            skip = False
+                        self.advance()
+                    self.advance(n=2)
+                else:
+                    self.add_token(TOK_RPAREN)
+
+            ######################################
             elif character == ')':
                 self.add_token(TOK_RPAREN)
             elif character == '{':
@@ -144,10 +160,9 @@ class Lexer:
                 self.add_token(TOK_QUESTION)
             elif character == '#':
                 pass
-
             # Greater than or equal, greater than,
             # less than or equal, less than
-            if character == '>':
+            elif character == '>':
                 if self.match('='):
                     self.add_token(TOK_GE)
                 elif self.match('>'):
@@ -161,41 +176,89 @@ class Lexer:
                     self.add_token(TOK_LTLT)
                 else:
                     self.add_token(TOK_LT)
-
             # Equivalent (No equals operator as of yet)
-            if character == '=':
+            elif character == '=':
                 if self.match('='):
                     self.add_token(TOK_EQ)
-
             # Not equal, not
-            if character == '~':
+            elif character == '~':
                 if self.match('='):
                     self.add_token(TOK_NE)
                 else:
                     self.add_token(TOK_NOT)
-
             # Assignment operator, colon
-            if character == ':':
+            elif character == ':':
                 if self.match('='):
                     self.add_token(TOK_ASSIGN)
                 else:
                     self.add_token(TOK_COLON)
-
             # Check if it is a digit, then perform the
             # logic of reading either ints or floats
-            if character.isdigit():
-                self.handle_digit()
-                        
+            elif character.isdigit():
+                self.handle_digit()            
             # Check if it is a ' or " and
             # then perform the logic of reading a string token
-            if character == '"' or character == '\'':
+            elif character == '"' or character == '\'':
                 self.handle_string()
-    
             # TODO: Check if it is an alpha character (a letter) or _,.
             # then we must handle an identifier
-            if character.isalpha() or character == '_':
+            elif character.isalpha() or character == '_':
                 self.handle_identifier()
-
+            else:
+                raise SyntaxError(f'[Line {self.current_line}] Error at {character}: Unexpected character.')
 
         return self.tokens
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                                                                                                                                                                
