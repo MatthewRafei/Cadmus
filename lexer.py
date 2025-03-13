@@ -1,7 +1,4 @@
 from tokens import *
-import pdb
-
-# TODO: Fix line counter with mutli-comments
 
 class Lexer:
     def __init__(self, source):
@@ -67,8 +64,9 @@ class Lexer:
             self.add_token(TOK_INTEGER)
 
     def handle_string(self):
-        while self.peek().isalpha() and \
-              not(self.current_character >= len(self.source)):
+        # Removed bounds checking because peek has it,
+        # If this fails thats why
+        while self.peek().isalpha():
             self.advance()
         if self.current_character >= len(self.source):
             raise SyntaxError(f'[Line {self.current_line}] Unterminated string.')
@@ -112,9 +110,8 @@ class Lexer:
                         self.advance()
                 else:
                     self.add_token(TOK_MINUS)
-            ###################################
-
             elif character == '(':
+                # Mutli-line comments
                 if self.match('*'):
                     skip = False
                     while not(self.current_character >= len(self.source)):
@@ -128,8 +125,6 @@ class Lexer:
                     self.advance(n=2)
                 else:
                     self.add_token(TOK_RPAREN)
-
-            ######################################
             elif character == ')':
                 self.add_token(TOK_RPAREN)
             elif character == '{':
@@ -147,6 +142,9 @@ class Lexer:
             elif character == '+':
                 self.add_token(TOK_PLUS)
             elif character == '*':
+                # Catch an illegal nested comment
+                if self.match(')'):
+                    raise SyntaxError(f'[Line {self.current_line}] Error at {character} Nested comments need to be escaped.')   
                 self.add_token(TOK_STAR)
             elif character == '/':
                 self.add_token(TOK_SLASH)
@@ -158,8 +156,6 @@ class Lexer:
                 self.add_token(TOK_SEMICOLON)
             elif character == '?':
                 self.add_token(TOK_QUESTION)
-            elif character == '#':
-                pass
             # Greater than or equal, greater than,
             # less than or equal, less than
             elif character == '>':
@@ -176,7 +172,7 @@ class Lexer:
                     self.add_token(TOK_LTLT)
                 else:
                     self.add_token(TOK_LT)
-            # Equivalent (No equals operator as of yet)
+            # Equivalent (No equals operator in the language)
             elif character == '=':
                 if self.match('='):
                     self.add_token(TOK_EQ)

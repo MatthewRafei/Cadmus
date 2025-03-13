@@ -74,7 +74,7 @@ keywords = {
     'print'    : TOK_PRINT,
     'println'  : TOK_PRINTLN,
     'RET'      : TOK_RET
-}   
+}  
 
 ###############################################################################
 # Token class definition
