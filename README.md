@@ -1,4 +1,4 @@
-# Cadmus
+# The Cadmus Scripting Language
 Based on https://pinky-lang.org/
 
 "Pinky is the perfect toy language for those who are just starting their journey into learning about compilers & interpreters. The language is ridiculously small, allowing students to really focus on compiler concepts instead of hipster language features."
