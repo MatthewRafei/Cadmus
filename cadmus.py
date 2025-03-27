@@ -1,6 +1,7 @@
 import sys
 from tokens import *
 from lexer import *
+from parse import *
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -14,5 +15,9 @@ if __name__ == '__main__':
         tokens = Lexer(source).tokenize()
         for token in tokens:
             print(token)
+
+        print("PARSED AST:")
+        ast = Parser(tokens).parse()
+        print(ast)
 
     

@@ -175,6 +175,8 @@ class Lexer:
             # Equivalent (No equals operator in the language)
             elif character == '=':
                 if self.match('='):
+                    self.add_token(TOK_EQEQ)
+                else:
                     self.add_token(TOK_EQ)
             # Not equal, not
             elif character == '~':
