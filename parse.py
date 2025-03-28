@@ -1,10 +1,46 @@
 from tokens import *
 from model import *
+from lexer import *
 
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.curr = 0
+
+    def advance(self):
+        token = self.tokens[self.curr]
+        self.curr = self.curr + 1
+        return token
+
+    def peek(self):
+        return self.tokens[self.curr]
+
+    def is_next(self, expected_type):
+        # Overflow protection
+        if self.curr >= len(self.tokens):
+            return False
+        return self.peek().token_type == expected_type
+
+    def expect(self, expected_type):
+        # Overflow protection
+        if self.curr >= len(self.tokens):
+            print(f'Found {self.previous_token().lexme!r} at the end of parsing')
+        elif self.peek().token_type == expected_type:
+            token = self.advance()
+            return token
+        else:
+            raise SyntaxError(f'Expected {exptected_type!r}, found {self.peek().lexme!r}.')
+
+    def previous_token(self):
+        return self.tokens[self.curr - 1]
+
+    def match(self, expected_type):
+        if self.curr >= len(self.tokens):
+            return False
+        if self.peek().token_type != expected_type:
+            return False
+        self.curr = self.curr + 1
+        return True
 
     def primary(self):
         if self.match(TOK_INTEGER):
@@ -46,4 +82,4 @@ class Parser:
 
     def parse(self):
         ast = self.expr()
-        return ast
+        return ast        
