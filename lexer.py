@@ -111,20 +111,7 @@ class Lexer:
                 else:
                     self.add_token(TOK_MINUS)
             elif character == '(':
-                # Mutli-line comments
-                if self.match('*'):
-                    skip = False
-                    while not(self.current_character >= len(self.source)):
-                        if not skip and self.peek() == '*' and self.lookahead() == ')':
-                            break
-                        if self.peek() == '\\':
-                            skip = True
-                        else:
-                            skip = False
-                        self.advance()
-                    self.advance(n=2)
-                else:
-                    self.add_token(TOK_RPAREN)
+                  self.add_token(TOK_RPAREN)
             elif character == ')':
                 self.add_token(TOK_RPAREN)
             elif character == '{':
@@ -143,8 +130,8 @@ class Lexer:
                 self.add_token(TOK_PLUS)
             elif character == '*':
                 # Catch an illegal nested comment
-                if self.match(')'):
-                    raise SyntaxError(f'[Line {self.current_line}] Error at {character} Nested comments need to be escaped.')   
+                #if self.match(')'):
+                    #raise SyntaxError(f'[Line {self.current_line}] Error at {character} Nested comments need to be escaped.')   
                 self.add_token(TOK_STAR)
             elif character == '/':
                 self.add_token(TOK_SLASH)
@@ -208,55 +195,19 @@ class Lexer:
         return self.tokens
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                                                                                                                                                                                                                                
+# elif character == '(':
+#     # Mutli-line comments
+#                 if self.match('*'):
+#                     skip = False
+#                     while not(self.current_character >= len(self.source)):
+#                         if not skip and self.peek() == '*' and self.lookahead() == ')':
+#                             break
+#                         if self.peek() == '\\':
+#                             skip = True
+#                         else:
+#                             skip = False
+#                             self.advance()
+#                             self.advance(n=2)
+#                 else:
+#                     self.add_token(TOK_RPAREN)
+                    
